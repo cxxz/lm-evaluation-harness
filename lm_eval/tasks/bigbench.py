@@ -229,7 +229,8 @@ def create_task_from_path(json_path):
 
 
 def create_all_tasks():
-    resources_dir = importlib.resources.files("lm_eval.datasets") / "bigbench_resources"
+    with importlib.resources.path("lm_eval.datasets", "") as path:
+        resources_dir = path / "bigbench_resources"
     supported_tasks = [os.path.splitext(x)[0] for x in os.listdir(resources_dir)]
     res = {}
     for task_name in supported_tasks:
