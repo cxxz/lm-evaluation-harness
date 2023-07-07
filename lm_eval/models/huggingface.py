@@ -3,6 +3,8 @@ import torch
 import torch.nn.functional as F
 import transformers
 import peft
+import os
+import deepspeed
 from peft import __version__ as PEFT_VERSION
 from pathlib import Path
 from typing import List, Mapping, NewType, Optional, Tuple, Union
@@ -17,6 +19,8 @@ TokenSequence = Union[List[int], torch.LongTensor, torch.Tensor, BatchEncoding]
 
 _DeviceMapping = NewType("DeviceMapping", Mapping[str, Union[int, str, torch.device]])
 
+local_rank = int(os.getenv("LOCAL_RANK", "0"))
+world_size = int(os.getenv("WORLD_SIZE", "1"))
 
 def _get_accelerate_args(
     device_map_option: Optional[str] = "auto",
@@ -80,6 +84,7 @@ class HuggingFaceAutoLM(BaseLM):
         max_length: Optional[int] = None,
         add_special_tokens: Optional[bool] = None,
         use_accelerate: Optional[bool] = False,
+        use_dp_autotp: Optional[bool] = False,
         device_map_option: Optional[str] = "auto",
         max_memory_per_gpu: Optional[Union[int, str]] = None,
         max_cpu_memory: Optional[Union[int, str]] = None,
@@ -227,6 +232,7 @@ class HuggingFaceAutoLM(BaseLM):
             load_in_4bit=load_in_4bit,
             bnb_4bit_quant_type=bnb_4bit_quant_type,
             bnb_4bit_compute_dtype=bnb_4bit_compute_dtype,
+            use_dp_autotp=use_dp_autotp,
             **model_kwargs,
         )
         # note: peft_path can be different than pretrained model path
@@ -241,7 +247,12 @@ class HuggingFaceAutoLM(BaseLM):
         self.model.eval()
         torch.set_grad_enabled(False)
 
-        self._device = device
+        if use_dp_autotp:
+            self._device = torch.device(f"cuda:{local_rank}")
+        else:
+            self._device = device
+        # print("CONG TEST device", self._device)
+
         if use_accelerate and "lm_head" in self.model.hf_device_map:
             # `accelerate` can place `lm_head` weights on a different device than
             # the user specified one so we force `self._device` to be the same as
@@ -270,6 +281,7 @@ class HuggingFaceAutoLM(BaseLM):
         gptq_use_triton: Optional[bool] = False,
         bnb_4bit_quant_type: Optional[str] = None,
         bnb_4bit_compute_dtype: Optional[Union[str, torch.dtype]] = None,
+        use_dp_autotp: Optional[bool] = False,
     ) -> transformers.AutoModel:
         """Returns a pre-trained pytorch model from a pre-trained model configuration."""
         if not quantized:
@@ -292,8 +304,18 @@ class HuggingFaceAutoLM(BaseLM):
                 load_in_8bit=load_in_8bit,
                 trust_remote_code=trust_remote_code,
                 torch_dtype=torch_dtype,
+                low_cpu_mem_usage=True,
                 **model_kwargs,
             )
+            if use_dp_autotp:
+                # print(f"CONG TEST local_rank: {local_rank}, world_size: {world_size}, "
+                #     f"torch_dtype: {torch_dtype}, model_kwargs: {model_kwargs}")
+                tp_config = {"tp_size": world_size}
+                model = deepspeed.init_inference(
+                    model,
+                    dtype=torch_dtype,
+                    tensor_parallel=tp_config,
+                )
         else:
             from auto_gptq import AutoGPTQForCausalLM
             model = AutoGPTQForCausalLM.from_quantized(

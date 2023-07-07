@@ -1,6 +1,7 @@
 import collections
 import itertools
 import random
+import time
 
 import lm_eval.metrics
 import lm_eval.models
@@ -102,6 +103,7 @@ def simple_evaluate(
     if check_integrity:
         run_task_tests(task_list=tasks)
 
+    start_time = time.time()
     results = evaluate(
         lm=lm,
         task_dict=task_dict,
@@ -113,6 +115,7 @@ def simple_evaluate(
         write_out=write_out,
         output_base_path=output_base_path,
     )
+    eval_time = time.time() - start_time
 
     # add info about the model and few shot config
     model_name = None
@@ -132,6 +135,7 @@ def simple_evaluate(
         "bootstrap_iters": bootstrap_iters,
         "description_dict": description_dict,
     }
+    results["evaluate_time_seconds"] = eval_time
 
     return results
 
