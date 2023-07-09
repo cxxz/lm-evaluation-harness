@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import transformers
 import peft
 import os
-import deepspeed
 from peft import __version__ as PEFT_VERSION
 from pathlib import Path
 from typing import List, Mapping, NewType, Optional, Tuple, Union
@@ -311,6 +310,7 @@ class HuggingFaceAutoLM(BaseLM):
                 # print(f"CONG TEST local_rank: {local_rank}, world_size: {world_size}, "
                 #     f"torch_dtype: {torch_dtype}, model_kwargs: {model_kwargs}")
                 tp_config = {"tp_size": world_size}
+                import deepspeed
                 model = deepspeed.init_inference(
                     model,
                     dtype=torch_dtype,
