@@ -490,7 +490,7 @@ class HuggingFaceAutoLM(BaseLM):
                 max_tokens = self.max_gen_toks
             else:
                 max_tokens = max_generation_length
-            print(f"CONG TEST max new tokens for model.generate: {max_tokens}")
+            # print(f"CONG TEST max new tokens for model.generate: {max_tokens}")
 
             token_context = self.tok_encode_batch(context)
 

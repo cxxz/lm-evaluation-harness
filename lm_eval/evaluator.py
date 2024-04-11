@@ -254,8 +254,9 @@ def evaluate(
         )
         if limit is not None:
             if limit < 0:
-                limit = 1.0
-            limit = int(len(task_docs) * limit) if limit < 1.0 else int(limit)
+                limit = None
+            else:
+                limit = int(len(task_docs) * limit) if limit < 1.0 else int(limit)
 
         for doc_id, doc in enumerate(itertools.islice(task_docs, 0, limit)):
             if decontaminate and task.should_decontaminate():
