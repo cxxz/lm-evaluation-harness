@@ -17,6 +17,7 @@ model's sample/generation function.
 Homepage: https://github.com/openai/grade-school-math
 """
 import re
+import pandas as pd
 from lm_eval.base import Task, rf
 from lm_eval.metrics import mean
 
@@ -41,7 +42,7 @@ class GradeSchoolMath8K(Task):
     VERSION = 0
     DATASET_PATH = "gsm8k"
     DATASET_NAME = "main"
-    SUBSET_CSV = ""
+    SUBSET_CSV = "https://raw.githubusercontent.com/cxxz/lm-evaluation-harness/deepspeed/lm_eval/subsets/gsm8k_SpectralClustering_0.1.csv"
 
     def has_training_docs(self):
         return True
@@ -50,6 +51,9 @@ class GradeSchoolMath8K(Task):
         return False
 
     def has_test_docs(self):
+        return True
+    
+    def has_subset_selection(self):
         return True
 
     def training_docs(self):

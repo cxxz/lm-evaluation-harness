@@ -232,6 +232,12 @@ def evaluate(
 
         # deterministically shuffle docs and chop off the first `limit` because sometimes docs are in some kind of order
         task_docs = list(task_doc_func())
+        if limit is not None and limit < 0:
+            # if limit is negative, subset selection is triggered
+            if task.has_subset_selection():
+                subset_indices = task.get_subset_indices()
+                task_docs = [subset_indices]
+                
         rnd = random.Random()
         rnd.seed(42)
         rnd.shuffle(task_docs)

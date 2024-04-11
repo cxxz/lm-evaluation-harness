@@ -1,6 +1,7 @@
 import abc
 from typing import Iterable
 import numpy as np
+import pandas as pd
 import random
 import re
 import os
@@ -484,6 +485,9 @@ class Task(abc.ABC):
     # The name of a subset within `DATASET_PATH`.
     DATASET_NAME: str = None
 
+    # The URL to a CSV file containing the subset indices of the dataset.
+    SUBSET_CSV: str = None
+
     def __init__(self, data_dir=None, cache_dir=None, download_mode=None):
         """
         :param data_dir: str
@@ -548,6 +552,10 @@ class Task(abc.ABC):
         """Whether this task supports decontamination against model training set."""
         return False
 
+    def get_subset_indices(self):
+        """Returns a list of indices corresponding to the subset of the dataset."""
+        return pd.read_csv(self.SUBSET_CSV)['index'].to_list()
+    
     @abstractmethod
     def has_training_docs(self):
         """Whether the task has a training set"""
@@ -562,6 +570,10 @@ class Task(abc.ABC):
     def has_test_docs(self):
         """Whether the task has a test set"""
         pass
+
+    def has_subset_selection(self):
+        """Whether the task has a subset selection"""
+        return False
 
     def training_docs(self):
         """
