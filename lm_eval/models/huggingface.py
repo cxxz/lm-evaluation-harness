@@ -68,7 +68,7 @@ class HuggingFaceAutoLM(BaseLM):
 
     # Default max sequence length setting for when no `max_length` is provided
     # or no max length config setting is found in the model or tokenizer.
-    _DEFAULT_MAX_LENGTH: int = 2048
+    _DEFAULT_MAX_LENGTH: int = 4096
 
     def __init__(
         self,
@@ -79,7 +79,7 @@ class HuggingFaceAutoLM(BaseLM):
         revision: Optional[str] = "main",
         batch_size: Optional[Union[int, str]] = 1,
         max_batch_size: Optional[int] = 512,
-        max_gen_toks: Optional[int] = 256,
+        max_gen_toks: Optional[int] = 2048,
         max_length: Optional[int] = None,
         add_special_tokens: Optional[bool] = None,
         use_accelerate: Optional[bool] = False,
@@ -488,7 +488,8 @@ class HuggingFaceAutoLM(BaseLM):
             if max_generation_length is None:
                 max_tokens = self.max_gen_toks
             else:
-                max_tokens = max_generation_length
+                max_tokens = max(max_generation_length, self.max_gen_toks)
+            print(f"CONG TEST max new tokens for model.generate: {max_tokens}")
 
             token_context = self.tok_encode_batch(context)
 

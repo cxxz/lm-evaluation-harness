@@ -41,6 +41,7 @@ class GradeSchoolMath8K(Task):
     VERSION = 0
     DATASET_PATH = "gsm8k"
     DATASET_NAME = "main"
+    SUBSET_CSV = ""
 
     def has_training_docs(self):
         return True
