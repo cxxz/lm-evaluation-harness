@@ -236,8 +236,9 @@ def evaluate(
             # if limit is negative, subset selection is triggered
             if task.has_subset_selection():
                 subset_indices = task.get_subset_indices()
-                task_docs = [subset_indices]
-                
+                # print(f"CONG TEST Length of subset indices: {len(subset_indices)}, {subset_indices}")
+                task_docs = task_docs[subset_indices]
+
         rnd = random.Random()
         rnd.seed(42)
         rnd.shuffle(task_docs)
