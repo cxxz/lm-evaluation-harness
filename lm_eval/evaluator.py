@@ -237,7 +237,7 @@ def evaluate(
             if task.has_subset_selection():
                 subset_indices = task.get_subset_indices()
                 # print(f"CONG TEST Length of subset indices: {len(subset_indices)}, {subset_indices}")
-                task_docs = task_docs[subset_indices]
+                task_docs = [task_docs[i] for i in subset_indices]
 
         rnd = random.Random()
         rnd.seed(42)
